@@ -7,10 +7,20 @@ var headers = {
   "access-control-allow-methods": "GET, POST, PUT, DELETE, OPTIONS",
   "access-control-allow-headers": "content-type, accept",
   "access-control-max-age": 10, // Seconds.
-  //'Content-Type': "text/plain"
+  'Content-Type': "application/json"
 };
 
-var connect = function(callback){
+var collectData = function(request, callback){
+  var data = "";
+   request.on('data', function(chunk){
+     data += chunk;
+   });
+   request.on('end', function(){
+     callback(JSON.parse(data));
+   });
+};
+
+var connect = function(queryString, queryArgs, callback){
   var dbConnection = mysql.createConnection({
     user: "root",
     password: "",
@@ -19,39 +29,70 @@ var connect = function(callback){
   dbConnection.connect();
 
   dbConnection.query(queryString, queryArgs, function(err, results) {
+    console.log(results);
     callback(results);
-  }
+  });
 
   dbConnection.end();
 };
 
 module.exports = {
   messages: {
+
+    options: function(req, res){
+      res.writeHead(200, headers);
+      res.end("okay");
+    },
+
     get: function (req, res) {
-      var queryString = "SELECT * FROM messages";
+      console.log('get request messages');
+      var queryString = "SELECT * FROM chat.messages";
       var queryArgs = [];
+      connect(queryString, queryArgs, function(results){
+        console.log(results);
+        var statusCode = statusCode || 200;
+        res.writeHead(200, headers);
+        res.end(JSON.stringify(results));
+      })
 
     }, // a function which handles a get request for all messages
     post: function (req, res) {
-      var queryString = "SELECT * FROM messages";
-      var queryArgs = [];
+      var queryString = "INSERT INTO chat.messages (text) VALUES (?)";
+      collectData(req, function(data){
+        dbConnection.query(queryString, [data.message], function(err){
+          if (err) { throw err; }
+          console.log('successful insert');
+        });
+      })
     } // a function which handles posting a message to the database
   },
 
   users: {
     // Ditto as above
+    options: function(req, res){
+      res.writeHead(200, headers);
+      res.end("okay");
+    },
+
     get: function (req, res) {
-      var queryString = "SELECT DISTINCT username FROM messages";
+      console.log('get request users');
+      var queryString = "SELECT DISTINCT username FROM chat.messages";
       var queryArgs = [];
-      connect(function(results){
+      connect(queryString, queryArgs, function(results){
         var statusCode = statusCode || 200;
-        res.writeHead('headers', 200);
-        res.end(results);
+        res.writeHead(200, headers);
+        res.end(JSON.stringify(results));
       })
     },
     post: function (req, res) {
-      var queryString = "SELECT * FROM messages";
-      var queryArgs = [];
+      var queryString = "INSERT INTO chat.messages (username) VALUES (?)";
+
+      collectData(req, function(data){
+        dbConnection.query(queryString, [data.username], function(err){
+          if (err) { throw err; }
+          console.log('successful insert');
+        });
+      })
     }
   }
 };
