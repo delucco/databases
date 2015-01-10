@@ -1,5 +1,7 @@
 var db = require('../db');
-
+var Sequelize = require("sequelize");
+var controllers = require('../controllers');
+var path      = require("path");
 
 
 
