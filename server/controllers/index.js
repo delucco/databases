@@ -12,10 +12,13 @@ var headers = {
 
 var collectData = function(request, callback){
   var data = "";
+  console.log('waiting for data')
    request.on('data', function(chunk){
      data += chunk;
+     console.log('collecting data');
    });
    request.on('end', function(){
+    console.log('data collected');
      callback(JSON.parse(data));
    });
 };
@@ -29,7 +32,7 @@ var connect = function(queryString, queryArgs, callback){
   dbConnection.connect();
 
   dbConnection.query(queryString, queryArgs, function(err, results) {
-    console.log(results);
+    //console.log(results);
     callback(results);
   });
 
@@ -49,21 +52,21 @@ module.exports = {
       var queryString = "SELECT * FROM chat.messages";
       var queryArgs = [];
       connect(queryString, queryArgs, function(results){
-        console.log(results);
         var statusCode = statusCode || 200;
         res.writeHead(200, headers);
-        res.end(JSON.stringify(results));
+        res.end(JSON.stringify({results: results}));
       })
 
     }, // a function which handles a get request for all messages
     post: function (req, res) {
-      var queryString = "INSERT INTO chat.messages (text) VALUES (?)";
-      collectData(req, function(data){
-        dbConnection.query(queryString, [data.message], function(err){
-          if (err) { throw err; }
-          console.log('successful insert');
-        });
-      })
+      var queryString = "INSERT INTO chat.messages (text, username) VALUES (?, ?)";
+      console.log(JSON.stringify(req.body));
+        connect(queryString, [req.body.text, req.body.username], function(results){
+          console.log('add to database results: ' + JSON.stringify(results))
+          var statusCode = statusCode || 200;
+          res.writeHead(201, headers);
+          res.end(JSON.stringify(results));
+        })
     } // a function which handles posting a message to the database
   },
 
@@ -81,18 +84,18 @@ module.exports = {
       connect(queryString, queryArgs, function(results){
         var statusCode = statusCode || 200;
         res.writeHead(200, headers);
-        res.end(JSON.stringify(results));
+        res.end(JSON.stringify({results: results}));
       })
     },
     post: function (req, res) {
-      var queryString = "INSERT INTO chat.messages (username) VALUES (?)";
-
-      collectData(req, function(data){
-        dbConnection.query(queryString, [data.username], function(err){
-          if (err) { throw err; }
-          console.log('successful insert');
-        });
-      })
+      var queryString = "INSERT INTO chat.messages (text, username) VALUES (?, ?)";
+        connect(queryString, [req.body.text, req.body.username], function(results){
+          console.log('add to database: ' + results);
+          var statusCode = statusCode || 200;
+          res.writeHead(201, headers);
+          res.end(JSON.stringify(results));
+        })
+      //});
     }
   }
 };

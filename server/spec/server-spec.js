@@ -52,10 +52,10 @@ describe("Persistent Node Chat Server", function() {
 
         dbConnection.query(queryString, queryArgs, function(err, results) {
           // Should have one result:
-          expect(results.length).to.equal(1);
+          expect(results.length).to.equal(2);
 
           // TODO: If you don't have a column named text, change this test.
-          expect(results[0].text).to.equal("In mercy's name, three days is all I need.");
+          expect(results[1].text).to.equal("In mercy's name, three days is all I need.");
 
           done();
         });
@@ -63,35 +63,35 @@ describe("Persistent Node Chat Server", function() {
     });
   });
 
-  // it("Should output all messages from the DB", function(done) {
-  //   // Let's insert a message into the db
+  it("Should output all messages from the DB", function(done) {
+    // Let's insert a message into the db
 
 
-  //      var queryString = "INSERT INTO chat.messages (text) VALUES (?)";
-  //      var queryArgs = ["Men like you can never change!"];
+       var queryString = "INSERT INTO chat.messages (text) VALUES (?)";
+       var queryArgs = ["Men like you can never change!"];
 
-  //   dbConnection.query(queryString, queryArgs, function(err){
-  //     if (err) { throw err; }
-  //     console.log('successful insert');
-  //   });
-  //   // TODO - The exact query string and query args to use
-  //   // here depend on the schema you design, so I'll leave
-  //   // them up to you. */
-  //   var queryString = "SELECT * FROM chat.messages";
-  //   var queryArgs = [];
+    dbConnection.query(queryString, queryArgs, function(err){
+      if (err) { throw err; }
+      console.log('successful insert');
+    });
+    // TODO - The exact query string and query args to use
+    // here depend on the schema you design, so I'll leave
+    // them up to you. */
+    var queryString = "SELECT * FROM chat.messages";
+    var queryArgs = [];
 
-  //   dbConnection.query(queryString, queryArgs, function(err) {
-  //     if (err) { throw err; }
+    dbConnection.query(queryString, queryArgs, function(err) {
+      if (err) { throw err; }
 
-  //     // Now query the Node chat server and see if it returns
-  //     // the message we just inserted:
-  //     request("http://127.0.0.1:3000/classes/messages", function(error, response, body) {
-  //       console.log(body);
-  //       var messageLog = JSON.parse(body);
-  //       expect(messageLog[0].text).to.equal("Men like you can never change!");
-  //       //expect(messageLog[0].roomname).to.equal("main");
-  //       done();
-  //     });
-  //   });
-  // });
+      // Now query the Node chat server and see if it returns
+      // the message we just inserted:
+      request("http://127.0.0.1:3000/classes/messages", function(error, response, body) {
+        console.log(body);
+        var messageLog = JSON.parse(body);
+        expect(messageLog[0].text).to.equal("Men like you can never change!");
+        //expect(messageLog[0].roomname).to.equal("main");
+        done();
+      });
+    });
+  });
 });
