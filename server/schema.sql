@@ -4,7 +4,8 @@ USE chat;
 
 CREATE TABLE messages (
   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  username varchar(255), text varchar(255)
+  username varchar(255), t
+  ext varchar(255)
   /* Describe your table here.*/
 );
 
